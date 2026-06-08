@@ -21,7 +21,7 @@ export default {
 }
 .menu {
   float: left;
-  width: 20%;
+  width: 21%;
 }
 .menuitem {
   padding: 8px;
