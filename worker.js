@@ -63,7 +63,7 @@ export default {
     
 
     return new Response(html, {
-      <!DOCTYPE html>
+     ' <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -126,7 +126,7 @@ export default {
                 }
             } catch (err) {
                 responseText.innerText = "Failed to connect to backend.";
-            }
+            }'
         });
     </script>
 </body>
