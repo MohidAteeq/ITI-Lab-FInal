@@ -60,7 +60,10 @@ export default {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
      
       }
-    const html = `<!DOCTYPE html>
+    
+
+    return new Response(html, {
+      <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -130,12 +133,7 @@ export default {
 </html>
 
 
-`;
 
-    return new Response(html, {
-      headers: {
-        "content-type": "text/html;charset=UTF-8",
-      },
     });
   },
 };
