@@ -56,8 +56,8 @@ const html = `<!DOCTYPE html>
             responseText.innerText = "Sending...";
 
             try {
-                // Replace with your actual deployed Cloudflare Worker URL
-                const response = await fetch('https://your-worker.workers.dev', {
+                // Use relative path to submit to the same worker
+                const response = await fetch(window.location.origin, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -78,16 +78,18 @@ const html = `<!DOCTYPE html>
 </body>
 </html>`;
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export default {
   async fetch(request, env) {
     // Handle CORS preflight requests
     if (request.method === "OPTIONS") {
       return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
+        headers: corsHeaders,
       });
     }
 
@@ -103,7 +105,7 @@ export default {
     if (request.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), { 
         status: 405, 
-        headers: { "Content-Type": "application/json" } 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
       });
     }
 
@@ -113,7 +115,10 @@ export default {
 
       // Basic validation check
       if (!name || !email || !message) {
-        return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+        return new Response(JSON.stringify({ error: "Missing fields" }), { 
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       }
 
       // Execute SQL command into D1 database binding named 'DB'
@@ -123,19 +128,19 @@ export default {
       .bind(name, email, message)
       .run();
 
-      // Return successful response
+      // Return successful response with CORS headers
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          ...corsHeaders,
         },
       });
 
     } catch (err) {
       return new Response(JSON.stringify({ success: false, error: err.message }), {
         status: 500,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
   },
