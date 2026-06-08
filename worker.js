@@ -59,7 +59,7 @@ export default {
         status: 500,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
      
-
+      }
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
