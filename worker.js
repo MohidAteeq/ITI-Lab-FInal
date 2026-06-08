@@ -8,62 +8,8 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 console.log("Hello, World!");
-export default {
-  async fetch(request, env) {
-    // Handle CORS preflight requests
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      });
-    }
 
-    // Only allow POST requests for submissions
-    if (request.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), { 
-        status: 405, 
-        headers: { "Content-Type": "application/json" } 
-      });
-    }
-
-    try {
-      // Parse the JSON request from the HTML page
-      const { name, email, message } = await request.json();
-
-      // Basic validation check
-      if (!name || !email || !message) {
-        return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
-      }
-
-      // Execute SQL command into D1 database binding named 'DB'
-      await env.DB.prepare(
-        "INSERT INTO submissions (name, email, message) VALUES (?, ?, ?)"
-      )
-      .bind(name, email, message)
-      .run();
-
-      // Return successful response
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*", // Allows frontend to read response
-        },
-      });
-
-    } catch (err) {
-      return new Response(JSON.stringify({ success: false, error: err.message }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-     
-      }
-    
-
-    return new Response(html, {
-     ' <!DOCTYPE html>
+const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -126,14 +72,71 @@ export default {
                 }
             } catch (err) {
                 responseText.innerText = "Failed to connect to backend.";
-            }'
+            }
         });
     </script>
 </body>
-</html>
+</html>`;
 
+export default {
+  async fetch(request, env) {
+    // Handle CORS preflight requests
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
+    }
 
+    // Handle GET requests - return the HTML form
+    if (request.method === "GET") {
+      return new Response(html, {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      });
+    }
 
-    });
+    // Only allow POST requests for submissions
+    if (request.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { 
+        status: 405, 
+        headers: { "Content-Type": "application/json" } 
+      });
+    }
+
+    try {
+      // Parse the JSON request from the HTML page
+      const { name, email, message } = await request.json();
+
+      // Basic validation check
+      if (!name || !email || !message) {
+        return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+      }
+
+      // Execute SQL command into D1 database binding named 'DB'
+      await env.DB.prepare(
+        "INSERT INTO submissions (name, email, message) VALUES (?, ?, ?)"
+      )
+      .bind(name, email, message)
+      .run();
+
+      // Return successful response
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+
+    } catch (err) {
+      return new Response(JSON.stringify({ success: false, error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
   },
 };
